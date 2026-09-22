@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Leave a Google Review</title>
+  <meta name="description" content="Quickly leave a Google review for your favorite local business — no typing required." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page-wrapper" id="page-wrapper">
+    <!-- Card container -->
+    <div class="review-card" id="review-card">
+
+      <!-- Powered-by tag -->
+      <div class="powered-by" id="powered-by">
+        Powered by <span class="brand-accent">QR Review</span>
+      </div>
+
+      <!-- Business name -->
+      <h1 class="business-name" id="business-name">Your Business Name</h1>
+
+      <!-- Helper label -->
+      <p class="helper-label" id="helper-label">Tap a star to get started</p>
+
+      <!-- Star rating -->
+      <div class="star-rating" id="star-rating" role="radiogroup" aria-label="Star rating">
+        <button class="star-btn" data-rating="1" aria-label="1 star" id="star-1">
+          <svg viewBox="0 0 24 24" class="star-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="star-btn" data-rating="2" aria-label="2 stars" id="star-2">
+          <svg viewBox="0 0 24 24" class="star-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="star-btn" data-rating="3" aria-label="3 stars" id="star-3">
+          <svg viewBox="0 0 24 24" class="star-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="star-btn" data-rating="4" aria-label="4 stars" id="star-4">
+          <svg viewBox="0 0 24 24" class="star-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="star-btn" data-rating="5" aria-label="5 stars" id="star-5">
+          <svg viewBox="0 0 24 24" class="star-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+      </div>
+
+      <!-- Review section (hidden until stars selected) -->
+      <div class="review-section" id="review-section">
+
+        <!-- Suggestion carousel -->
+        <div class="carousel-wrapper" id="carousel-wrapper">
+          <button class="carousel-btn carousel-prev" id="carousel-prev" aria-label="Previous suggestion">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+          <div class="carousel-content" id="carousel-content">
+            <p class="suggestion-text" id="suggestion-text">Loading suggestion...</p>
+            <span class="suggestion-counter" id="suggestion-counter">1 / 3</span>
+          </div>
+          <button class="carousel-btn carousel-next" id="carousel-next" aria-label="Next suggestion">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+        </div>
+
+        <!-- Generate custom review link -->
+        <button class="generate-link" id="generate-link">
+          <span class="sparkle">✨</span> Generate Custom Review
+        </button>
+
+        <!-- Editable textarea -->
+        <textarea
+          class="review-textarea"
+          id="review-textarea"
+          rows="4"
+          placeholder="Edit your review here…"
+          aria-label="Review text"
+        ></textarea>
+
+        <!-- Clipboard pill -->
+        <div class="clipboard-pill" id="clipboard-pill">
+          <svg viewBox="0 0 24 24" width="14" height="14" class="pill-check"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          Copied to clipboard
+        </div>
+
+        <!-- CTA button -->
+        <button class="cta-button" id="cta-button">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="google-icon">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Submit Review on Google
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer branding -->
+    <p class="footer-brand" id="footer-brand">
+      Built by PurvaxBit
+    </p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
