@@ -4,34 +4,11 @@
  * Powered by Gemini AI review generation (via secure backend proxy)
  */
 
-// ── Fallback Review Data (safety net when AI is unavailable) ──
-const REVIEW_DATA = {
-  5: [
-    "BP International is our go-to for bulk gift and decoration orders. The photo frames and crystal frames are top quality, and their pricing for wholesale is hard to beat.",
-    "Ordered flex banners, handicrafts, and stationery in bulk from BP International and everything came in perfect condition. Very professional team that handles large orders well.",
-    "We've been sourcing flower items and decorations from BP International for a while now. Consistent quality, great bulk pricing, and a solid range of handicrafts."
-  ],
-  4: [
-    "Good wholesale supplier for bulk orders. BP International has a solid selection of photo frames, crystal frames, and decorations. Competitive pricing for what you get.",
-    "Really happy with our bulk order of flex banners and gift items from BP International. Well-packaged and decent handicraft quality. A few more payment options would help.",
-    "BP International offers a nice range of flower items and decorations at wholesale rates. Ordering process is straightforward and the team is responsive."
-  ],
-  3: [
-    "BP International has a fair range of wholesale gift items and decorations. Bulk pricing on photo frames and stationery is reasonable. Some handicraft items could be better quality.",
-    "Ordered flower items and crystal frames in bulk from BP International. Crystal frames were nice, but a few flower items were not quite as expected. Staff were helpful though.",
-    "Average experience with BP International for bulk orders. Flex banners and decorations are decent for the price. Stationery range could be wider."
-  ]
-};
-
 // ── Configuration ──
 const CONFIG = {
   brandName: 'QR Review',
   clipboardPillDuration: 2500,
-  toastDuration: 3000,
-
-  // ── API Configuration (secure backend proxy) ──
-  apiEndpoint: '/api/generate-review',
-  apiTimeoutMs: 15000
+  toastDuration: 3000
 };
 
 // ── Hardcoded Business Data for BP International ──
@@ -87,60 +64,41 @@ function parseBusinessData() {
 
 // ── Secure Backend Proxy API ──
 /**
- * Fetches AI-generated reviews via the secure backend proxy.
- * Returns an array of review strings, or null on failure.
+ * Fetches AI-generated reviews via the secure Vercel backend.
+ * Returns an array of review strings, or a single-element error array on failure.
  */
 async function fetchGeminiReviews(rating) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CONFIG.apiTimeoutMs);
-
   try {
-    const response = await fetch(CONFIG.apiEndpoint, {
+    const response = await fetch('/api/generate-review', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        rating,
-        businessName: currentBusiness.name,
-        businessType: currentBusiness.type,
-        keywords: currentBusiness.keywords
-      }),
-      signal: controller.signal
+      body: JSON.stringify({ rating, business: currentBusiness })
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      console.warn(`[QR Review] Backend proxy error (${response.status}):`, errData);
-      return null;
+      console.warn(`[QR Review] Backend error (${response.status})`);
+      return ["⚠️ Failed to connect to the AI server. Please try again."];
     }
 
     const data = await response.json();
 
-    // Backend returns { reviews: [...] }
     if (!data?.reviews || !Array.isArray(data.reviews) || data.reviews.length === 0) {
       console.warn('[QR Review] Invalid response from backend:', data);
-      return null;
+      return ["⚠️ Failed to connect to the AI server. Please try again."];
     }
 
     const validReviews = data.reviews.filter(r => typeof r === 'string' && r.trim().length > 0);
     if (validReviews.length === 0) {
       console.warn('[QR Review] All reviews were empty after filtering.');
-      return null;
+      return ["⚠️ Failed to connect to the AI server. Please try again."];
     }
 
     console.log(`[QR Review] ✓ Received ${validReviews.length} AI reviews for ${rating}★`);
     return validReviews;
 
   } catch (err) {
-    clearTimeout(timeoutId);
-
-    if (err.name === 'AbortError') {
-      console.warn(`[QR Review] Request timed out after ${CONFIG.apiTimeoutMs}ms — using fallback.`);
-    } else {
-      console.warn('[QR Review] Fetch failed:', err.message);
-    }
-    return null;
+    console.warn('[QR Review] Fetch failed:', err.message);
+    return ["⚠️ Failed to connect to the AI server. Please try again."];
   }
 }
 
@@ -177,34 +135,17 @@ function setLoadingState(isLoading) {
 async function loadReviewsForRating(rating) {
   const clampedRating = Math.max(3, Math.min(5, rating));
 
-  // Try AI generation via backend proxy
+  // Fetch AI reviews via secure backend — no fallback
   setLoadingState(true);
 
-  const aiReviews = await fetchGeminiReviews(clampedRating);
+  const reviews = await fetchGeminiReviews(clampedRating);
 
   setLoadingState(false);
 
-  if (aiReviews) {
-    state.reviews = aiReviews;
-    state.currentIndex = 0;
-    loadCurrentSuggestion();
-    return aiReviews;
-  }
-
-  // Fallback to local review data
-  console.log(`[QR Review] Loading fallback reviews for ${clampedRating}★`);
-  state.reviews = [...(REVIEW_DATA[clampedRating] || [])];
-  if (state.reviews.length > 0) {
-    state.currentIndex = 0;
-    loadCurrentSuggestion();
-    return state.reviews;
-  }
-
-  // No data available at all
-  state.reviews = [];
-  dom.suggestionText.textContent = 'Could not generate reviews. Please write your own below.';
-  dom.suggestionCounter.textContent = '';
-  return [];
+  state.reviews = reviews;
+  state.currentIndex = 0;
+  loadCurrentSuggestion();
+  return reviews;
 }
 
 // ── Star Rating Logic ──
