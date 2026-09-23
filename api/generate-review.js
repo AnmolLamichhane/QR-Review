@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   try {
     // The strict prompt for Gemini
-    const prompt = `Write a realistic, 1-2 sentence Google review for ${business.name}. The customer gave it ${rating} out of 5 stars. Keep it natural, focus on wholesale/B2B services, gifts, or decorations, and do not use hashtags.`;
+    const prompt = `Write a realistic, 1-2 sentence Google review for ${business?.name || 'the business'}. The customer gave it ${rating} out of 5 stars. Keep it natural, focus on wholesale/B2B services, gifts, or decorations, and do not use hashtags.`;
 
     // Securely call Google Gemini
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
@@ -39,4 +39,4 @@ export default async function handler(req, res) {
     console.error('Backend Error:', error);
     return res.status(500).json({ error: 'Failed to generate review.' });
   }
-}
+};
