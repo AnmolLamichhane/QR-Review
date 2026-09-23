@@ -68,38 +68,40 @@ function parseBusinessData() {
  * Returns an array of review strings, or a single-element error array on failure.
  */
 async function fetchGeminiReviews(rating) {
-  try {
-    const response = await fetch('/api/generate-review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating, business: currentBusiness })
-    });
+    try {
+        const response = await fetch('/api/generate-review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rating, business: currentBusiness })
+        });
 
-    if (!response.ok) {
-      console.warn(`[QR Review] Backend error (${response.status})`);
-      return ["⚠️ Failed to connect to the AI server. Please try again."];
+        if (!response.ok) {
+            console.warn(`[QR Review] Backend error (${response.status})`);
+            return ["⚠️ Failed to connect to the AI server. Please try again."];
+        }
+
+        const data = await response.json();
+
+        // FIX: Check 'data' directly instead of 'data.reviews'
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            console.warn('[QR Review] Invalid response from backend:', data);
+            return ["⚠️ Failed to connect to the AI server. Please try again."];
+        }
+
+        const validReviews = data.filter(r => typeof r === 'string' && r.trim().length > 0);
+        
+        if (validReviews.length === 0) {
+            console.warn('[QR Review] All reviews were empty after filtering.');
+            return ["⚠️ Failed to connect to the AI server. Please try again."];
+        }
+
+        console.log(`[QR Review] ✓ Received ${validReviews.length} AI reviews for ${rating}⭐`);
+        return validReviews;
+
+    } catch (err) {
+        console.warn('[QR Review] Fetch failed:', err.message);
+        return ["⚠️ Failed to connect to the AI server. Please try again."];
     }
-
-    const data = await response.json();
-
-    if (!data?.reviews || !Array.isArray(data.reviews) || data.reviews.length === 0) {
-      console.warn('[QR Review] Invalid response from backend:', data);
-      return ["⚠️ Failed to connect to the AI server. Please try again."];
-    }
-
-    const validReviews = data.reviews.filter(r => typeof r === 'string' && r.trim().length > 0);
-    if (validReviews.length === 0) {
-      console.warn('[QR Review] All reviews were empty after filtering.');
-      return ["⚠️ Failed to connect to the AI server. Please try again."];
-    }
-
-    console.log(`[QR Review] ✓ Received ${validReviews.length} AI reviews for ${rating}★`);
-    return validReviews;
-
-  } catch (err) {
-    console.warn('[QR Review] Fetch failed:', err.message);
-    return ["⚠️ Failed to connect to the AI server. Please try again."];
-  }
 }
 
 // ── Loading State Helpers ──
