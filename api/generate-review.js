@@ -13,8 +13,8 @@ module.exports = async function handler(req, res) {
   try {
     const prompt = `Write a realistic, 1-2 sentence Google review for ${business?.name || 'the business'}. The customer gave it ${rating} out of 5 stars. Keep it natural, focus on wholesale/B2B services, gifts, or decorations, and do not use hashtags.`;
 
-    // FIX: Updated model name to 'gemini-1.5-flash-latest'
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    // FIX: This now uses the universally supported 'gemini-pro' model
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
