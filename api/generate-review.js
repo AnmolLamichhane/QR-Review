@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
     const prompt = `Write a realistic, 1-2 sentence Google review for ${business?.name || 'the business'}. The customer gave it ${rating} out of 5 stars. Keep it natural, focus on wholesale/B2B services, gifts, or decorations, and do not use hashtags.`;
 
     // FIX: This now uses the universally supported 'gemini-pro' model
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
