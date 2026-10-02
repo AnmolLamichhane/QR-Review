@@ -77,7 +77,7 @@ async function fetchGeminiReviews(rating) {
 
         if (!response.ok) {
             console.warn(`[QR Review] Backend error (${response.status})`);
-            return ["⚠️ Failed to connect to the AI server. Please try again."];
+            return null;
         }
 
         const data = await response.json();
@@ -85,14 +85,14 @@ async function fetchGeminiReviews(rating) {
         // FIX: Check 'data' directly instead of 'data.reviews'
         if (!data || !Array.isArray(data) || data.length === 0) {
             console.warn('[QR Review] Invalid response from backend:', data);
-            return ["⚠️ Failed to connect to the AI server. Please try again."];
+            return null;
         }
 
         const validReviews = data.filter(r => typeof r === 'string' && r.trim().length > 0);
         
         if (validReviews.length === 0) {
             console.warn('[QR Review] All reviews were empty after filtering.');
-            return ["⚠️ Failed to connect to the AI server. Please try again."];
+            return null;
         }
 
         console.log(`[QR Review] ✓ Received ${validReviews.length} AI reviews for ${rating}⭐`);
@@ -100,7 +100,7 @@ async function fetchGeminiReviews(rating) {
 
     } catch (err) {
         console.warn('[QR Review] Fetch failed:', err.message);
-        return ["⚠️ Failed to connect to the AI server. Please try again."];
+        return null;
     }
 }
 
@@ -137,17 +137,25 @@ function setLoadingState(isLoading) {
 async function loadReviewsForRating(rating) {
   const clampedRating = Math.max(3, Math.min(5, rating));
 
-  // Fetch AI reviews via secure backend — no fallback
+  // Fetch AI reviews via secure backend, fall back to mock reviews
   setLoadingState(true);
 
-  const reviews = await fetchGeminiReviews(clampedRating);
+  const aiReviews = await fetchGeminiReviews(clampedRating);
 
   setLoadingState(false);
 
-  state.reviews = reviews;
+  if (aiReviews) {
+    state.reviews = aiReviews;
+    console.log(`[QR Review] Using AI-generated reviews for ${clampedRating}★`);
+  } else {
+    // Fallback: use mock reviews from the local database
+    state.reviews = getMockReviews(clampedRating, 5);
+    console.log(`[QR Review] AI unavailable — using mock reviews for ${clampedRating}★`);
+  }
+
   state.currentIndex = 0;
   loadCurrentSuggestion();
-  return reviews;
+  return state.reviews;
 }
 
 // ── Star Rating Logic ──
@@ -307,19 +315,15 @@ async function generateCustomReview() {
     return;
   }
 
-  // AI failed — shuffle existing reviews locally
+  // AI failed — pull fresh batch from mock reviews
   const carousel = dom.carouselContent;
   carousel.classList.add('generating');
   dom.generateLink.style.pointerEvents = 'none';
 
   setTimeout(() => {
-    const available = state.reviews.filter((_, i) => i !== state.currentIndex);
-    if (available.length > 0) {
-      const randomReview = available[Math.floor(Math.random() * available.length)];
-      state.currentIndex = state.reviews.indexOf(randomReview);
-    } else {
-      state.currentIndex = (state.currentIndex + 1) % state.reviews.length;
-    }
+    state.reviews = getMockReviews(clampedRating, 5);
+    state.currentIndex = 0;
+    console.log(`[QR Review] AI unavailable — refreshed with mock reviews for ${clampedRating}★`);
 
     loadCurrentSuggestion();
     carousel.classList.remove('generating');
